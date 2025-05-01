@@ -110,7 +110,7 @@
             line-height: 18px;
             text-align: right;
         }
-        
+
         .invoice-number-value {
             font-size: 12px;
             line-height: 18px;
@@ -205,7 +205,7 @@
         tr.item-table-heading-row th:first-child {
             border-top-left-radius: 4px;
         }
-        
+
         tr.item-table-heading-row th:last-child {
             border-top-right-radius: 4px;
         }
@@ -355,7 +355,7 @@
         }
 
         /* -- Redesigned Components -- */
-        
+
         .address-section {
             display: flex;
             margin-top: 30px;
@@ -363,26 +363,26 @@
             justify-content: space-between;
             clear: both;
         }
-        
+
         .address-label {
             font-size: 12px;
             font-weight: bold;
             color: #1a5999;
             margin-bottom: 8px;
-            
+
         }
-        
+
         .address-content {
             font-size: 12px;
             /* line-height: 18px; */
             color: #595959;
         }
-        
+
         .customer-name {
             font-weight: bold;
             color: #084280;
         }
-        
+
         .billing-address-container,
         .shipping-address-container {
             float: none;
@@ -393,13 +393,13 @@
             border-radius: 4px;
             border: 1px solid #E8E8E8; */
         }
-        
+
         .invoice-items-section {
             margin: 30px 0 10px 0;
             clear: both;
             position: relative;
         }
-        
+
         .notes-section {
             margin: 30px 30px 25px 30px;
             /* padding: 15px; */
@@ -409,14 +409,14 @@
             clear: both;
             position: relative;
         }
-        
+
         .notes-content {
             font-size: 12px;
             line-height: 18px;
             color: #595959;
             margin-top: 5px;
         }
-        
+
         .notes-label {
             font-size: 13px;
             line-height: 20px;
@@ -436,25 +436,25 @@
             left: 0;
             right: 0;
         }
-        
+
         .footer-content {
             width: 100%;
             text-align: center;
             margin: 0 auto;
             position: relative;
         }
-        
+
         .footer-content p {
             margin: 0;
             display: inline-block;
         }
-        
+
         .footer-link {
             color: #084280;
             text-decoration: none;
         }
-        
-        
+
+
         .footer-gradient {
             height: 2px;
             width: 100%;
@@ -472,10 +472,11 @@
             top: 0;
             left: 0;
             right: 0;
-            background: #084280; /* Fallback for older browsers */
+            background: #084280;
+            /* Fallback for older browsers */
             background: linear-gradient(to right, #084280, #1a5999, #67d3ea);
         }
-        
+
         .gradient-line-bottom {
             height: 6px;
             width: 100%;
@@ -483,7 +484,8 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: #084280; /* Fallback for older browsers */
+            background: #084280;
+            /* Fallback for older browsers */
             background: linear-gradient(to right, #084280, #1a5999, #67d3ea);
         }
     </style>
@@ -496,7 +498,8 @@
             <tr>
                 <td class="text-center">
                     @if ($logo)
-                        <img class="header-logo" style="height:50px" src="{{ \App\Space\ImageUtils::toBase64Src($logo) }}" alt="Company Logo">
+                        <img class="header-logo" style="height:50px" src="{{ \App\Space\ImageUtils::toBase64Src($logo) }}"
+                            alt="Company Logo">
                     @else
                         @if ($invoice->customer->company)
                             <h2 class="header-logo"> {{ $invoice->customer->company->name }}</h2>
@@ -556,21 +559,187 @@
 
         <!-- Invoice items table with improved wrapper -->
         <div class="invoice-items-section">
-            @include('app.pdf.invoice.partials.table')
-            
+            <!-- @include('app.pdf.invoice.partials.table') -->
+
+            <table width="100%" class="items-table" cellspacing="0" border="0">
+                <tr class="item-table-heading-row">
+                    <th width="2%" class="pr-20 text-right item-table-heading">#</th>
+                    <th width="40%" class="pl-0 text-left item-table-heading">@lang('pdf_items_label')</th>
+                    @foreach($customFields as $field)
+                        <th class="text-right item-table-heading">{{ $field->label }}</th>
+                    @endforeach
+                    <th class="pr-20 text-right item-table-heading">@lang('pdf_quantity_label')</th>
+                    <th class="pr-20 text-right item-table-heading">@lang('pdf_rate_label')</th>
+                    @if($invoice->discount_per_item === 'YES')
+                        <th class="pl-10 text-right item-table-heading">@lang('pdf_discount_label')</th>
+                    @endif
+                    @if($invoice->tax_per_item === 'YES')
+                        <th class="pl-10 text-right item-table-heading">@lang('pdf_tax_label')</th>
+                    @endif
+                    <th class="text-right item-table-heading">@lang('pdf_amount_label')</th>
+                </tr>
+                @php
+                    $index = 1
+                @endphp
+                @foreach ($invoice->items as $item)
+                    <tr class="item-row">
+                        <td class="pr-20 text-right item-cell" style="vertical-align: top;">
+                            {{$index}}
+                        </td>
+                        <td class="pl-0 text-left item-cell" style="vertical-align: top;">
+                            <span>{{ $item->name }}</span><br>
+                            <span class="item-description">{!! nl2br(htmlspecialchars($item->description)) !!}</span>
+                        </td>
+                        @foreach($customFields as $field)
+                            <td class="text-right item-cell" style="vertical-align: top;">
+                                {{ $item->getCustomFieldValueBySlug($field->slug) }}
+                            </td>
+                        @endforeach
+                        <td class="pr-20 text-right item-cell" style="vertical-align: top;">
+                            {{$item->quantity}} @if($item->unit_name) {{$item->unit_name}} @endif
+                        </td>
+                        <td class="pr-20 text-right item-cell" style="vertical-align: top;">
+                            {!! format_money_pdf($item->price, $invoice->customer->currency) !!}
+                        </td>
+
+                        @if($invoice->discount_per_item === 'YES')
+                            <td class="pl-10 text-right item-cell" style="vertical-align: top;">
+                                @if($item->discount_type === 'fixed')
+                                    {!! format_money_pdf($item->discount_val, $invoice->customer->currency) !!}
+                                @endif
+                                @if($item->discount_type === 'percentage')
+                                    {{$item->discount}}%
+                                @endif
+                            </td>
+                        @endif
+
+                        @if($invoice->tax_per_item === 'YES')
+                            <td class="pl-10 text-right item-cell" style="vertical-align: top;">
+                                {!! format_money_pdf($item->tax, $invoice->customer->currency) !!}
+                            </td>
+                        @endif
+
+                        <td class="text-right item-cell" style="vertical-align: top;">
+                            {!! format_money_pdf($item->total, $invoice->customer->currency) !!}
+                        </td>
+                    </tr>
+                    @php
+                        $index += 1
+                    @endphp
+                @endforeach
+            </table>
+
+            <hr class="item-cell-table-hr">
+
+            <div class="total-display-container">
+                <table width="100%" cellspacing="0px" border="0"
+                    class="total-display-table @if(count($invoice->items) > 12) page-break @endif">
+                    <tr>
+                        <td class="border-0 total-table-attribute-label">@lang('pdf_subtotal')</td>
+                        <td class="py-2 border-0 item-cell total-table-attribute-value">
+                            {!! format_money_pdf($invoice->sub_total, $invoice->customer->currency) !!}
+                        </td>
+                    </tr>
+
+                    @if($invoice->discount > 0)
+                        @if ($invoice->discount_per_item === 'NO')
+                            <tr>
+                                <td class="border-0 total-table-attribute-label">
+                                    @if($invoice->discount_type === 'fixed')
+                                        @lang('pdf_discount_label')
+                                    @endif
+                                    @if($invoice->discount_type === 'percentage')
+                                        @lang('pdf_discount_label') ({{$invoice->discount}}%)
+                                    @endif
+                                </td>
+                                <td class="py-2 border-0 item-cell total-table-attribute-value">
+                                    @if($invoice->discount_type === 'fixed')
+                                        {!! format_money_pdf($invoice->discount_val, $invoice->customer->currency) !!}
+                                    @endif
+                                    @if($invoice->discount_type === 'percentage')
+                                        {!! format_money_pdf($invoice->discount_val, $invoice->customer->currency) !!}
+                                    @endif
+                                </td>
+                            </tr>
+                        @endif
+                    @endif
+
+                    @if ($invoice->tax_per_item === 'YES')
+                        @foreach ($taxes as $tax)
+                            <tr>
+                                <td class="border-0 total-table-attribute-label">
+                                    {{$tax->name . ' (' . $tax->percent . '%)'}}
+                                </td>
+                                <td class="py-2 border-0 item-cell total-table-attribute-value">
+                                    {!! format_money_pdf($tax->amount, $invoice->customer->currency) !!}
+                                </td>
+                            </tr>
+                        @endforeach
+                    @else
+                        @foreach ($invoice->taxes as $tax)
+                            <tr>
+                                <td class="border-0 total-table-attribute-label">
+                                    {{$tax->name . ' (' . $tax->percent . '%)'}}
+                                </td>
+                                <td class="py-2 border-0 item-cell total-table-attribute-value">
+                                    {!! format_money_pdf($tax->amount, $invoice->customer->currency) !!}
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endif
+
+                    <tr>
+                        <td class="py-3"></td>
+                        <td class="py-3"></td>
+                    </tr>
+                    <tr>
+                        <td class="border-0 total-border-left total-table-attribute-label">
+                            @lang('pdf_total')
+                        </td>
+                        <td class="py-8 border-0 total-border-right item-cell total-table-attribute-value"
+                            style="color: #084280">
+                            {!! format_money_pdf($invoice->total, $invoice->customer->currency)!!}
+                        </td>
+                    </tr>
+
+                    @if($invoice->paid_status === App\Models\Invoice::STATUS_PARTIALLY_PAID || $invoice->paid_status === App\Models\Invoice::STATUS_PAID)
+                        <tr>
+                            <td class="border-0 total-border-left total-table-attribute-label">
+                                @lang('pdf_amount_paid')
+                            </td>
+                            <td class="py-8 border-0 total-border-right item-cell total-table-attribute-value">
+                                {!! format_money_pdf($invoice->total - $invoice->due_amount, $invoice->customer->currency)!!}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="border-0 total-border-left total-table-attribute-label">
+                                @lang('pdf_amount_due')
+                            </td>
+                            <td class="py-8 border-0 total-border-right item-cell total-table-attribute-value"
+                                style="color: #084280">
+                                {!! format_money_pdf($invoice->due_amount, $invoice->customer->currency)!!}
+                            </td>
+                        </tr>
+                    @endif
+
+                </table>
+            </div>
+
+
+
             <!-- Add spacing between total and notes -->
             <div style="clear: both; padding-bottom: 20px;"></div>
         </div>
 
         <!-- Notes section moved after the totals section -->
         @if ($notes)
-        <div class="notes-section">
-            <div class="notes-label">@lang('pdf_notes')</div>
-            <div class="notes-content">{!! $notes !!}</div>
-        </div>
+            <div class="notes-section">
+                <div class="notes-label">@lang('pdf_notes')</div>
+                <div class="notes-content">{!! $notes !!}</div>
+            </div>
         @endif
     </div>
-    
+
     <footer class="invoice-footer">
         <div class="footer-gradient"></div>
         <div class="footer-content">
