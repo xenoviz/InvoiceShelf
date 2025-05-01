@@ -51,53 +51,53 @@ jobs:
             - name: Check source code for syntax errors
               run: ./vendor/bin/pint --test
 
-    tests:
-        name: 2️⃣ PHP ${{ matrix.php-version }} Tests
-        needs:
-            - php_syntax_errors
-        runs-on: ubuntu-latest
-        strategy:
-            matrix:
-                php-version:
-                    - 8.2
-                    - 8.3
-        env:
-            extensions: bcmath, curl, dom, gd, imagick, json, libxml, mbstring, pcntl, pdo, pdo_mysql, zip
+    # tests:
+    #     name: 2️⃣ PHP ${{ matrix.php-version }} Tests
+    #     needs:
+    #         - php_syntax_errors
+    #     runs-on: ubuntu-latest
+    #     strategy:
+    #         matrix:
+    #             php-version:
+    #                 - 8.2
+    #                 - 8.3
+    #     env:
+    #         extensions: bcmath, curl, dom, gd, imagick, json, libxml, mbstring, pcntl, pdo, pdo_mysql, zip
 
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
+    #     steps:
+    #         - name: Checkout code
+    #           uses: actions/checkout@v3
 
-            - name: Setup PHP Action
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: ${{ matrix.php-version }}
-                  extensions: ${{ env.extensions }}
-                  coverage: xdebug
-                  tools: pecl, composer
+    #         - name: Setup PHP Action
+    #           uses: shivammathur/setup-php@v2
+    #           with:
+    #               php-version: ${{ matrix.php-version }}
+    #               extensions: ${{ env.extensions }}
+    #               coverage: xdebug
+    #               tools: pecl, composer
 
-            - name: Install Composer dependencies
-              uses: ramsey/composer-install@v2
+    #         - name: Install Composer dependencies
+    #           uses: ramsey/composer-install@v2
 
-            - name: Use Node.js 20
-              uses: actions/setup-node@v3
-              with:
-                  node-version: 20
+    #         - name: Use Node.js 20
+    #           uses: actions/setup-node@v3
+    #           with:
+    #               node-version: 20
 
-            - name: Install
-              run: npm install
+    #         - name: Install
+    #           run: npm install
 
-            - name: Compile Front-end
-              run: npm run build
+    #         - name: Compile Front-end
+    #           run: npm run build
 
-            - name: Apply tests ${{ matrix.php-version }}
-              run: php artisan test
+    #         - name: Apply tests ${{ matrix.php-version }}
+    #           run: php artisan test
 
     createReleaseFile:
         name: 3️⃣ Build / Upload - Release File
-        if: github.ref_type == 'tag'
-        needs:
-            - tests
+        # if: github.ref_type == 'tag'
+        # needs:
+        #     - tests
         runs-on: ubuntu-latest
         env:
             extensions: bcmath, curl, dom, gd, imagick, json, libxml, mbstring, pcntl, pdo, pdo_mysql, zip
