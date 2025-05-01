@@ -1603,6 +1603,7 @@
   "pdf_notes": "Notes",
   "pdf_items_label": "Items",
   "pdf_quantity_label": "Quantity",
+  "pdf_rate_label": "Rate",
   "pdf_price_label": "Price",
   "pdf_discount_label": "Discount",
   "pdf_amount_label": "Amount",
