@@ -8,7 +8,7 @@ services:
         - UID=${USRID:-1000}
         - GID=${GRPID:-1000}
     ports:
-      - 5173:5173
+      - 5273:5273
     volumes:
       - ../:/home/invoiceshelf/app
     networks:
@@ -59,6 +59,11 @@ services:
     ports:
       - 1025:1025
       - 8025:8025
+    networks:
+      - invoiceshelf-dev
+
+  pdf:
+    image: gotenberg/gotenberg:8
     networks:
       - invoiceshelf-dev
 
